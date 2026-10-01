@@ -2,377 +2,282 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SYED MINI :: TERMINAL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0e13">
+<title>𝐈𝐁𝐑𝐀𝐇𝐈𝐌 𝐌𝐃 | 𝐏𝐀𝐈𝐑𝐈𝐍𝐆 𝐒𝐈𝐓𝐄</title>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-  :root{
-    --bg:#030603;
-    --bg-panel:rgba(6,16,8,0.85);
-    --bg-panel-2:rgba(4,10,5,0.9);
-    --grid:rgba(57,255,20,0.05);
-    --green:#39ff14;
-    --green-dim:#12a52a;
-    --green-deep:#064d16;
-    --green-glass:rgba(57,255,20,0.08);
-    --border:rgba(57,255,20,0.25);
-    --text:#d4ffd4;
-    --muted:#5f9d6a;
-    --amber:#ffd23f;
-    --danger:#ff4d4d;
-    --radius:14px;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;}
-  html{scroll-behavior:smooth;}
-  body{
-    background:var(--bg);
-    color:var(--text);
-    font-family:'JetBrains Mono',monospace;
+@property --angle{syntax:'<angle>';initial-value:0deg;inherits:false}
+
+:root{
+    --bg:#0b0e13;
+    --panel:#121722;
+    --panel-2:#0e121b;
+    --line:#242c3a;
+    --line-soft:#1a212d;
+    --text:#ece8df;
+    --muted:#8d95a4;
+    --gold:#c9a45c;
+    --gold-hi:#e0c184;
+    --gold-ink:#1a1407;
+    --ok:#8fd19e;
+    --danger:#e57373;
+    --amber:#e0c184;
+    --serif:'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    --sans:'Manrope', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --ease:cubic-bezier(.22,1,.36,1);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+
+body{
     min-height:100vh;
-    line-height:1.6;
-    position:relative;
+    min-height:100dvh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:
+        max(20px, env(safe-area-inset-top))
+        max(16px, env(safe-area-inset-right))
+        max(20px, env(safe-area-inset-bottom))
+        max(16px, env(safe-area-inset-left));
+    font-family:var(--sans);
+    color:var(--text);
+    background:var(--bg);
+    line-height:1.5;
     overflow-x:hidden;
-  }
+    position:relative;
+}
 
-  /* ---------- Ambient terminal backdrop ---------- */
-  .grid-bg{
-    position:fixed;inset:0;z-index:-3;
-    background-image:
-      linear-gradient(var(--grid) 1px,transparent 1px),
-      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-    background-size:38px 38px;
-    mask-image:radial-gradient(ellipse 80% 70% at 50% 20%,#000 40%,transparent 100%);
-  }
-  .glow-orb{
-    position:fixed;top:-10%;left:50%;transform:translateX(-50%);
-    width:60vw;height:60vw;max-width:900px;max-height:900px;
-    background:radial-gradient(circle,rgba(57,255,20,0.10) 0%,transparent 65%);
-    filter:blur(40px);z-index:-2;pointer-events:none;
-    animation:orbPulse 8s ease-in-out infinite alternate;
-  }
-  @keyframes orbPulse{0%{opacity:.5;}100%{opacity:1;}}
-  .scanlines{
-    position:fixed;inset:0;z-index:50;pointer-events:none;
-    background:repeating-linear-gradient(0deg,rgba(0,0,0,0.15) 0px,rgba(0,0,0,0.15) 1px,transparent 2px,transparent 3px);
-    opacity:.35;
-  }
-  .particles{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
-  .particle{position:absolute;background:var(--green);border-radius:50%;opacity:0;animation:drift linear infinite;box-shadow:0 0 6px var(--green);}
-  @keyframes drift{0%{transform:translateY(100vh);opacity:0;}10%{opacity:.7;}90%{opacity:.4;}100%{transform:translateY(-10vh);opacity:0;}}
+/* Elements kept only so the unchanged script finds them */
+#boot,#channelModal,#particles,#navToggle,#navLinks{display:none !important;}
 
-  /* ---------- Boot sequence overlay ---------- */
-  #boot{
-    position:fixed;inset:0;z-index:999;background:#010301;
-    display:flex;align-items:center;justify-content:center;
-    font-family:'Share Tech Mono',monospace;
-  }
-  #boot pre{color:var(--green);font-size:.85rem;white-space:pre-wrap;max-width:600px;padding:20px;text-shadow:0 0 8px rgba(57,255,20,.5);}
-  #boot .cursor{display:inline-block;width:8px;height:16px;background:var(--green);animation:blink 1s step-end infinite;vertical-align:middle;}
-  @keyframes blink{50%{opacity:0;}}
-  #boot.hide{animation:bootOut .5s ease forwards;}
-  @keyframes bootOut{to{opacity:0;visibility:hidden;}}
+/* ---------- Ambient background ---------- */
+.ambient{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;will-change:transform}
+.orb.one{width:420px;height:420px;top:-140px;left:-100px;background:rgba(201,164,92,.30);animation:drift1 18s ease-in-out infinite alternate}
+.orb.two{width:380px;height:380px;bottom:-140px;right:-100px;background:rgba(70,100,170,.28);animation:drift2 22s ease-in-out infinite alternate}
+@keyframes drift1{to{transform:translate(120px,90px) scale(1.15)}}
+@keyframes drift2{to{transform:translate(-110px,-80px) scale(1.1)}}
 
-  /* ---------- Modal ---------- */
-  .modal{
-    position:fixed;inset:0;background:rgba(1,4,1,.85);backdrop-filter:blur(8px);
-    display:flex;align-items:center;justify-content:center;z-index:800;
-    opacity:0;visibility:hidden;transition:.35s ease;
-  }
-  .modal.active{opacity:1;visibility:visible;}
-  .modal-content{
-    width:90%;max-width:460px;background:var(--bg-panel-2);
-    border:1px solid var(--border);border-radius:var(--radius);
-    transform:translateY(-30px);transition:transform .35s ease;
-    box-shadow:0 0 60px rgba(57,255,20,.08),0 25px 50px rgba(0,0,0,.6);
-  }
-  .modal.active .modal-content{transform:translateY(0);}
-  .modal-head{
-    padding:20px 22px;border-bottom:1px solid var(--border);
-    display:flex;justify-content:space-between;align-items:center;
-  }
-  .modal-head h2{font-size:1rem;letter-spacing:1px;color:var(--green);font-weight:600;}
-  .modal-head h2::before{content:"root@syed:~$ ";color:var(--muted);}
-  .modal-close{background:none;border:none;color:var(--muted);font-size:1.4rem;cursor:pointer;line-height:1;}
-  .modal-close:hover{color:var(--green);}
-  .modal-body{padding:22px;}
-  .modal-body p{color:var(--muted);font-size:.85rem;margin-bottom:16px;}
-  .channel-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;}
-  .channel-item{
-    display:flex;align-items:center;gap:10px;padding:12px 14px;
-    background:rgba(57,255,20,.04);border:1px solid var(--border);border-radius:8px;
-    text-decoration:none;color:var(--text);font-size:.82rem;transition:.25s;
-  }
-  .channel-item:hover{background:var(--green-glass);border-color:var(--green);transform:translateX(4px);}
-  .channel-item i{color:var(--green);width:18px;}
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    background:var(--green);color:#01120a;font-weight:700;font-size:.82rem;
-    letter-spacing:.5px;padding:13px 22px;border:none;border-radius:8px;
-    cursor:pointer;text-decoration:none;width:100%;text-transform:uppercase;
-    transition:.25s;position:relative;overflow:hidden;
-  }
-  .btn:hover{box-shadow:0 0 25px rgba(57,255,20,.45);transform:translateY(-2px);}
-  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
-  .btn-outline{background:transparent;color:var(--green);border:1px solid var(--border);}
-  .btn-outline:hover{background:var(--green-glass);}
+/* ---------- Card with travelling gold edge ---------- */
+.card{
+    position:relative;z-index:1;width:100%;max-width:440px;padding:1px;border-radius:22px;
+    background:conic-gradient(from var(--angle),
+        var(--line) 0deg, var(--line) 250deg,
+        var(--gold) 320deg, var(--gold-hi) 340deg,
+        var(--line) 360deg);
+    animation:spinEdge 8s linear infinite, cardIn .9s var(--ease) both;
+    box-shadow:0 40px 80px -30px rgba(0,0,0,.8);
+}
+@keyframes spinEdge{to{--angle:360deg}}
+@keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
 
-  /* ---------- Nav ---------- */
-  nav{
-    position:fixed;top:0;left:0;right:0;height:74px;z-index:200;
-    display:flex;align-items:center;justify-content:space-between;
-    padding:0 32px;background:rgba(2,6,3,.85);backdrop-filter:blur(16px);
-    border-bottom:1px solid var(--border);
-  }
-  .brand{display:flex;align-items:center;gap:12px;}
-  .brand .mark{
-    width:40px;height:40px;border-radius:8px;border:1px solid var(--border);
-    display:flex;align-items:center;justify-content:center;
-    font-family:'Share Tech Mono',monospace;font-size:1.2rem;color:var(--green);
-    background:var(--green-glass);text-shadow:0 0 10px var(--green);
-  }
-  .brand .name{font-weight:700;font-size:1rem;letter-spacing:.5px;}
-  .brand .tag{font-size:.68rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
-  .nav-links{display:flex;gap:28px;align-items:center;}
-  .nav-links a{color:var(--muted);text-decoration:none;font-size:.82rem;letter-spacing:.5px;transition:.25s;}
-  .nav-links a:hover{color:var(--green);}
-  .nav-toggle{display:none;background:none;border:none;color:var(--green);font-size:1.3rem;cursor:pointer;}
+.card-inner{
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    border-radius:21px;padding:40px 32px 28px;text-align:center;
+}
+.card-inner > *{animation:rise .8s var(--ease) both}
+.card-inner > .d1{animation-delay:.25s}
+.card-inner > .d2{animation-delay:.38s}
+.card-inner > .d3{animation-delay:.5s}
+.card-inner > .d4{animation-delay:.6s}
+.card-inner > .d5{animation-delay:.7s}
+.card-inner > .d6{animation-delay:.85s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
-  /* ---------- Header ---------- */
-  header{padding:150px 20px 70px;text-align:center;position:relative;}
-  .eyebrow{
-    display:inline-flex;align-items:center;gap:8px;font-size:.72rem;letter-spacing:3px;
-    color:var(--muted);text-transform:uppercase;margin-bottom:22px;
-    border:1px solid var(--border);padding:6px 14px;border-radius:30px;background:var(--green-glass);
-  }
-  .eyebrow .pulse{width:6px;height:6px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);animation:blink 1.4s infinite;}
-  header h1{
-    font-family:'Share Tech Mono',monospace;
-    font-size:clamp(2.2rem,6vw,4.2rem);letter-spacing:2px;
-    color:var(--green);text-shadow:0 0 18px rgba(57,255,20,.35);
-    margin-bottom:18px;position:relative;display:inline-block;
-  }
-  header h1 .glitch-wrap{position:relative;display:inline-block;}
-  header h1 .glitch-wrap::before,header h1 .glitch-wrap::after{
-    content:attr(data-text);position:absolute;top:0;left:0;width:100%;
-    overflow:hidden;color:var(--green);
-  }
-  header h1 .glitch-wrap::before{left:2px;text-shadow:-2px 0 var(--danger);animation:glitchTop 5s infinite linear alternate-reverse;clip-path:inset(0 0 55% 0);}
-  header h1 .glitch-wrap::after{left:-2px;text-shadow:2px 0 var(--amber);animation:glitchBot 6s infinite linear alternate-reverse;clip-path:inset(55% 0 0 0);}
-  @keyframes glitchTop{0%,90%,100%{transform:translate(0,0);}92%{transform:translate(-3px,-1px);}94%{transform:translate(3px,1px);}96%{transform:translate(-2px,0);}}
-  @keyframes glitchBot{0%,90%,100%{transform:translate(0,0);}91%{transform:translate(2px,1px);}95%{transform:translate(-3px,-1px);}97%{transform:translate(2px,0);}}
-  header p.sub{color:var(--muted);max-width:560px;margin:0 auto;font-size:.95rem;}
-  header p.sub strong{color:var(--green);}
+/* ---------- Header ---------- */
+.brand-mark{display:inline-block;font-size:1.5rem;margin-bottom:10px;animation:float 4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-4px)}}
 
-  .stats-row{display:flex;justify-content:center;gap:20px;margin-top:44px;flex-wrap:wrap;}
-  .stat-card{
-    display:flex;align-items:center;gap:14px;background:var(--bg-panel);
-    border:1px solid var(--border);border-radius:var(--radius);padding:18px 26px;
-    min-width:190px;backdrop-filter:blur(10px);
-  }
-  .stat-card i{font-size:1.5rem;color:var(--green);}
-  .stat-value{font-size:1.6rem;font-weight:700;color:var(--green);font-family:'Share Tech Mono',monospace;}
-  .stat-label{font-size:.72rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.brand{
+    font-family:var(--serif);font-weight:700;font-size:2.15rem;line-height:1.1;letter-spacing:.06em;
+    background:linear-gradient(100deg, var(--text) 35%, var(--gold-hi) 50%, var(--text) 65%);
+    background-size:250% 100%;-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:var(--text);animation:sheen 6s ease-in-out infinite;
+}
+@keyframes sheen{0%,30%{background-position:120% 0}70%,100%{background-position:-20% 0}}
 
-  /* ---------- Main sections ---------- */
-  main{max-width:1080px;margin:0 auto;padding:20px 20px 40px;}
-  section.panel{
-    margin:26px 0;padding:34px;background:var(--bg-panel);
-    border:1px solid var(--border);border-radius:var(--radius);
-    backdrop-filter:blur(14px);position:relative;
-  }
-  section.panel::before{
-    content:attr(data-label);position:absolute;top:-11px;left:24px;
-    background:var(--bg);padding:0 10px;font-size:.68rem;color:var(--muted);
-    letter-spacing:2px;text-transform:uppercase;
-  }
-  section.panel h2{
-    display:flex;align-items:center;gap:12px;color:var(--green);font-size:1.3rem;
-    margin-bottom:24px;font-family:'Share Tech Mono',monospace;letter-spacing:1px;
-  }
+.subtitle{margin-top:10px;font-size:.95rem;font-weight:500;color:var(--gold);letter-spacing:.14em}
 
-  .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;}
-  .feature-item{
-    padding:24px;border:1px solid var(--border);border-radius:10px;
-    background:rgba(57,255,20,.03);transition:.3s;
-  }
-  .feature-item:hover{background:var(--green-glass);transform:translateY(-4px);border-color:var(--green);}
-  .feature-item i{font-size:1.6rem;color:var(--green);margin-bottom:14px;display:block;}
-  .feature-item h3{font-size:.95rem;margin-bottom:8px;letter-spacing:.5px;}
-  .feature-item p{color:var(--muted);font-size:.82rem;}
+.divider{height:1px;margin:26px auto;width:64px;background:var(--gold);opacity:.6;animation:grow 1s var(--ease) .5s both !important}
+@keyframes grow{from{width:0;opacity:0}to{width:64px;opacity:.6}}
 
-  .instructions{background:rgba(57,255,20,.03);border-left:3px solid var(--green);border-radius:8px;padding:20px 22px;margin-bottom:26px;}
-  .instructions h3{color:var(--green);font-size:.9rem;margin-bottom:12px;letter-spacing:.5px;}
-  .instructions ol{padding-left:20px;color:var(--muted);font-size:.85rem;}
-  .instructions li{margin-bottom:10px;}
-  .instructions li::marker{color:var(--green);}
+/* ---------- Live stats ---------- */
+.stats-row{display:flex;gap:10px;margin-bottom:22px}
+.stat-card{
+    flex:1;padding:12px 8px;background:#0a0d14;border:1px solid var(--line-soft);border-radius:12px;
+}
+.stat-value{font-family:var(--serif);font-size:1.6rem;font-weight:700;line-height:1.1;color:var(--gold-hi)}
+.stat-label{font-size:.68rem;font-weight:600;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
 
-  .input-box{display:flex;flex-direction:column;gap:16px;max-width:440px;}
-  .input-group{position:relative;}
-  .input-group i{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--muted);}
-  .input-group input{
-    width:100%;padding:15px 16px 15px 46px;border-radius:8px;
-    border:1px solid var(--border);background:rgba(0,0,0,.4);color:var(--text);
-    font-family:'JetBrains Mono',monospace;font-size:.9rem;transition:.25s;
-  }
-  .input-group input:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(57,255,20,.12);}
-  .input-group input::placeholder{color:#3d5c42;}
+.status-label{display:block;font-size:.92rem;color:var(--muted);margin-bottom:14px}
 
-  #status{margin-top:20px;padding:16px 18px;border-radius:8px;background:rgba(0,0,0,.3);border-left:3px solid var(--muted);font-size:.85rem;display:none;}
-  #status.show{display:block;}
-  #status.success{border-left-color:var(--green);background:rgba(57,255,20,.08);color:var(--green);}
-  #status.error{border-left-color:var(--danger);background:rgba(255,77,77,.08);color:#ff9a9a;}
-  #status.warning{border-left-color:var(--amber);background:rgba(255,210,63,.08);color:var(--amber);}
+/* ---------- Form ---------- */
+.field{margin-bottom:14px}
 
-  .code-wrap{display:none;margin-top:26px;animation:riseIn .5s ease;}
-  @keyframes riseIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
-  .code-box{
-    font-family:'Share Tech Mono',monospace;font-size:2rem;letter-spacing:8px;
-    text-align:center;padding:22px;border:1px dashed var(--green);border-radius:10px;
-    background:rgba(0,0,0,.45);color:var(--green);text-shadow:0 0 12px rgba(57,255,20,.5);
-    cursor:pointer;transition:.25s;
-  }
-  .code-box:hover{background:var(--green-glass);}
-  .copy-hint{text-align:center;font-size:.72rem;color:var(--muted);margin-top:10px;letter-spacing:.5px;}
-  .waiting{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px;font-size:.78rem;color:var(--muted);}
-  .waiting .dot{width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 8px var(--green);animation:blink 1.3s infinite;}
+#phone{
+    display:block;width:100%;padding:16px;font-family:var(--sans);font-size:1.08rem;font-weight:600;letter-spacing:.06em;
+    text-align:center;color:var(--text);background:#0a0d14;border:1px solid var(--line);border-radius:12px;outline:none;
+    transition:border-color .25s, box-shadow .25s, transform .25s var(--ease);
+}
+#phone::placeholder{color:#4f586a;font-weight:500;letter-spacing:.04em}
+#phone:hover{border-color:#34405a}
+#phone:focus{
+    border-color:var(--gold);
+    box-shadow:0 0 0 4px rgba(201,164,92,.16), 0 10px 30px -12px rgba(201,164,92,.35);
+    transform:translateY(-1px);
+}
 
-  .link-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+button.inner-box{
+    position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;
+    font-family:var(--sans);font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--gold-ink);background:linear-gradient(180deg, var(--gold-hi), var(--gold));
+    border:none;border-radius:12px;cursor:pointer;box-shadow:0 8px 22px -8px rgba(201,164,92,.55);
+    transition:transform .25s var(--ease), box-shadow .25s;-webkit-tap-highlight-color:transparent;
+}
+button.inner-box::after{
+    content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.55), transparent);
+    transform:skewX(-20deg);animation:sweep 4.5s ease-in-out 1.8s infinite;
+}
+@keyframes sweep{0%{left:-60%}35%,100%{left:140%}}
+button.inner-box:hover{transform:translateY(-2px);box-shadow:0 14px 30px -10px rgba(201,164,92,.7)}
+button.inner-box:active{transform:translateY(0) scale(.985)}
+button.inner-box:disabled{opacity:.65;cursor:not-allowed;transform:none}
 
-  footer{text-align:center;padding:50px 20px;color:var(--muted);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px;}
-  footer span{color:var(--green);}
+#phone:focus-visible,
+button.inner-box:focus-visible,
+#pairingCode:focus-visible{outline:2px solid var(--gold-hi);outline-offset:3px}
 
-  #toast{
-    position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(100px);
-    background:var(--green);color:#01120a;padding:12px 24px;border-radius:30px;
-    font-size:.8rem;font-weight:700;transition:.4s cubic-bezier(.175,.885,.32,1.275);z-index:900;
-  }
-  #toast.show{transform:translateX(-50%) translateY(0);}
+/* ---------- Status message ---------- */
+#status{
+    display:none;margin-top:16px;padding:13px 16px;border-radius:12px;background:#0a0d14;
+    border:1px solid var(--line-soft);border-left:3px solid var(--muted);
+    font-size:.88rem;text-align:left;color:var(--muted);
+}
+#status.show{display:block;animation:reveal .5s var(--ease) both}
+#status.success{border-left-color:var(--ok);color:var(--ok)}
+#status.error{border-left-color:var(--danger);color:#f0a0a0}
+#status.warning{border-left-color:var(--amber);color:var(--amber)}
 
-  @media(max-width:768px){
-    nav{padding:0 18px;}
-    .nav-links{
-      position:fixed;top:74px;left:0;right:0;background:rgba(2,6,3,.97);
-      flex-direction:column;padding:16px;gap:0;border-bottom:1px solid var(--border);
-      transform:translateY(-110%);opacity:0;visibility:hidden;transition:.3s;
-    }
-    .nav-links.active{transform:translateY(0);opacity:1;visibility:visible;}
-    .nav-links a{padding:14px;width:100%;text-align:center;border-bottom:1px solid rgba(57,255,20,.08);}
-    .nav-toggle{display:block;}
-    header{padding:120px 16px 50px;}
-    section.panel{padding:24px 18px;}
-    .code-box{font-size:1.4rem;letter-spacing:5px;}
-  }
+/* ---------- Pairing code result ---------- */
+.code-wrap{margin-top:18px}
+@keyframes reveal{from{opacity:0;transform:translateY(10px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes glow{0%{box-shadow:0 0 0 0 rgba(201,164,92,.45)}100%{box-shadow:0 0 0 18px rgba(201,164,92,0)}}
+
+#pairingCode{
+    display:flex;align-items:center;justify-content:center;min-height:62px;padding:12px 14px;border-radius:14px;
+    font-family:var(--sans);font-size:1.6rem;font-weight:700;letter-spacing:4px;text-align:center;word-break:break-word;
+    background:#0a0d14;border:1px dashed #3a4457;cursor:pointer;user-select:all;
+    color:var(--gold-hi) !important;border-color:var(--gold) !important;
+    animation:reveal .6s var(--ease) both, glow 2.4s ease-out .4s 1;
+    transition:background .3s;
+}
+#pairingCode:hover{background:rgba(201,164,92,.06)}
+.copy-hint{margin-top:10px;font-size:.78rem;color:var(--muted)}
+.waiting{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;font-size:.82rem;color:var(--muted)}
+.waiting .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+
+/* ---------- Footer ---------- */
+.foot{margin-top:28px;padding-top:20px;border-top:1px solid var(--line-soft)}
+.foot .tag{font-size:.78rem;font-weight:600;letter-spacing:.16em;color:var(--text)}
+.foot p{margin-top:6px;font-size:.8rem;color:var(--muted)}
+.foot .tag{margin-top:0}
+.foot .edition{color:var(--gold)}
+
+/* ---------- Toast ---------- */
+#toast{
+    position:fixed;bottom:max(24px, env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(120px);
+    max-width:90vw;text-align:center;padding:12px 24px;border-radius:30px;z-index:900;
+    background:linear-gradient(180deg, var(--gold-hi), var(--gold));color:var(--gold-ink);
+    font-size:.78rem;font-weight:700;letter-spacing:.1em;
+    transition:transform .45s var(--ease);box-shadow:0 14px 36px rgba(0,0,0,.5);
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ---------- Small screens ---------- */
+@media (max-width:420px){
+    .card{border-radius:19px}
+    .card-inner{padding:32px 20px 22px;border-radius:18px}
+    .brand{font-size:1.8rem}
+    #pairingCode{font-size:1.3rem;letter-spacing:3px}
+    .orb{filter:blur(70px)}
+}
+@media (max-height:620px){
+    body{align-items:flex-start}
+}
+
+/* ---------- Respect reduced motion ---------- */
+@media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important}
+    .brand{-webkit-text-fill-color:var(--text)}
+}
 </style>
 </head>
 <body>
 
+<!-- Hidden hooks required by the unchanged script -->
 <div id="boot"><pre id="bootText"></pre></div>
-<div class="scanlines"></div>
-<div class="grid-bg"></div>
-<div class="glow-orb"></div>
-<div class="particles" id="particles"></div>
+<div id="particles"></div>
+<div id="channelModal"><button id="modalClose"></button><button id="confirmFollow"></button></div>
+<button id="navToggle"></button>
+<div id="navLinks"></div>
 
-<!-- Channel modal -->
-<div id="channelModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-head">
-      <h2>required_channels.sh</h2>
-      <button class="modal-close" id="modalClose">&times;</button>
-    </div>
-    <div class="modal-body">
-      <p>// Follow the official channels below to unlock pairing access and receive live updates.</p>
-      <div class="channel-list">
-        <a href="https://whatsapp.com/channel/0029VaGiJKfIiRoybPBMTy38" target="_blank" class="channel-item"><i class="fab fa-whatsapp"></i><span>WhatsApp Channel — Updates</span></a>
-        <a href="https://whatsapp.com/channel/0029Vb7SDZ31iUxhzG0W4t1M" target="_blank" class="channel-item"><i class="fab fa-whatsapp"></i><span>WhatsApp Channel — Support</span></a>
-        <a href="https://www.youtube.com/@Teamsyedhaker" target="_blank" class="channel-item"><i class="fab fa-youtube"></i><span>YouTube Channel</span></a>
-        <a href="https://whatsapp.com/channel/0029VbCkaqb5fM5VgpvRJc2Y" target="_blank" class="channel-item"><i class="fab fa-whatsapp"></i><span>WhatsApp Channel — Announcements</span></a>
-      </div>
-      <button class="btn" id="confirmFollow"><i class="fas fa-check"></i> I've followed all channels</button>
-    </div>
-  </div>
+<div class="ambient" aria-hidden="true">
+    <span class="orb one"></span>
+    <span class="orb two"></span>
 </div>
 
-<nav>
-  <div class="brand">
-    <div class="mark">$_</div>
-    <div>
-      <div class="name">SYED MINI MD</div>
-      <div class="tag">whatsapp automation</div>
+<main class="card">
+  <div class="card-inner">
+
+    <header class="d1">
+        <span class="brand-mark" aria-hidden="true">👑</span>
+        <h1 class="brand">𝐈𝐁𝐑𝐀𝐇𝐈𝐌 𝐌𝐃 𝐁𝐎𝐓 🚀</h1>
+        <p class="subtitle">WHATSAPP PAIR CODE</p>
+    </header>
+
+    <div class="divider" aria-hidden="true"></div>
+
+    <div class="stats-row d2">
+        <div class="stat-card"><div class="stat-value" id="activeSockets">0</div><div class="stat-label">Active Sockets</div></div>
+        <div class="stat-card"><div class="stat-value" id="totalUsers">0</div><div class="stat-label">Total Users</div></div>
     </div>
+
+    <label class="status-label d3" for="phone">Enter your WhatsApp number with country code —</label>
+
+    <div class="field d4">
+        <input type="tel" id="phone" inputmode="numeric" autocomplete="tel" placeholder="923237045919">
+    </div>
+
+    <div class="field d5">
+        <button class="inner-box" id="requestPairing"><i class="fas fa-key"></i> Request Pairing Code</button>
+    </div>
+
+    <div id="status" aria-live="polite"></div>
+
+    <div class="code-wrap" id="codeWrap" style="display:none;">
+        <div id="pairingCode" onclick="copyCode()" role="button" tabindex="0" title="Tap to copy">0000 0000</div>
+        <div class="copy-hint">Tap the code to copy</div>
+        <div class="waiting"><span class="dot"></span> Waiting for device to link...</div>
+    </div>
+
+    <footer class="foot d6">
+        <p class="tag">𝐈𝐁𝐑𝐀𝐇𝐈𝐌 𝐌𝐃 𝐁𝐎𝐓 🚀</p>
+        <p>𝐌𝐚𝐝𝐞 𝐁𝐲 𝗜𝗯𝗿𝗮𝗵𝗶𝗺 𝐖𝐢𝐭𝐡 🤍</p>
+        <p class="edition">𝐈𝐁𝐑𝐀𝐇𝐈𝐌 𝐌𝐃 𝐁𝐎𝐓 🚀 &middot; V1 &middot; &copy; <span id="year"></span></p>
+    </footer>
+
   </div>
-  <div class="nav-links" id="navLinks">
-    <a href="#features">features</a>
-    <a href="#connect">connect</a>
-    <a href="#links">links</a>
-  </div>
-  <button class="nav-toggle" id="navToggle"><i class="fas fa-bars"></i></button>
-</nav>
-
-<header>
-  <div class="eyebrow"><span class="pulse"></span> SESSION READY // NODE ONLINE</div>
-  <h1><span class="glitch-wrap" data-text="SYED MINI MD">SYED MINI MD</span></h1>
-  <p class="sub">A fast, minimal WhatsApp automation core — built &amp; maintained by <strong>SYED TECH</strong>.</p>
-
-  <div class="stats-row">
-    <div class="stat-card"><i class="fas fa-signal"></i><div><div class="stat-value" id="activeSockets">0</div><div class="stat-label">Active Sockets</div></div></div>
-    <div class="stat-card"><i class="fas fa-users"></i><div><div class="stat-value" id="totalUsers">0</div><div class="stat-label">Total Users</div></div></div>
-  </div>
-</header>
-
-<main>
-  <section id="features" class="panel" data-label="./features">
-    <h2><i class="fas fa-star"></i> Features</h2>
-    <div class="feature-grid">
-      <div class="feature-item"><i class="fas fa-reply"></i><h3>Auto Replies</h3><p>Smart automated responses based on customizable triggers.</p></div>
-      <div class="feature-item"><i class="fas fa-image"></i><h3>Media Tools</h3><p>Download, convert, and manage media files with ease.</p></div>
-      <div class="feature-item"><i class="fas fa-puzzle-piece"></i><h3>Commands System</h3><p>Extend functionality with custom commands and scripts.</p></div>
-      <div class="feature-item"><i class="fas fa-shield-alt"></i><h3>Security</h3><p>Built-in safeguards to protect your privacy and session data.</p></div>
-    </div>
-  </section>
-
-  <section id="connect" class="panel" data-label="./connect">
-    <h2><i class="fas fa-link"></i> Connect to WhatsApp</h2>
-    <div class="instructions">
-      <h3>How to connect</h3>
-      <ol>
-        <li>Enter your WhatsApp number with country code (no "+", no spaces, no brackets)</li>
-        <li>Click "Request Pairing Code"</li>
-        <li>Copy the 8-digit code</li>
-        <li>Open WhatsApp → Settings → Linked Devices → Link a Device</li>
-        <li>Paste the code when prompted</li>
-      </ol>
-    </div>
-
-    <div class="input-box">
-      <div class="input-group">
-        <i class="fas fa-phone"></i>
-        <input type="tel" id="phone" placeholder="e.g. 923300000000 (with country code)">
-      </div>
-      <button class="btn" id="requestPairing"><i class="fas fa-key"></i> Request Pairing Code</button>
-    </div>
-
-    <div id="status"></div>
-
-    <div class="code-wrap" id="codeWrap">
-      <div class="code-box" id="pairingCode" onclick="copyCode()">0000 0000</div>
-      <div class="copy-hint">Tap the code to copy</div>
-      <div class="waiting"><span class="dot"></span> Waiting for device to link...</div>
-    </div>
-  </section>
-
-  <section id="links" class="panel" data-label="./links">
-    <h2><i class="fas fa-external-link-alt"></i> Links</h2>
-    <div class="link-grid">
-      <a class="btn btn-outline" href="https://whatsapp.com/channel/0029VaGiJKfIiRoybPBMTy38" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp Channel</a>
-      <a class="btn btn-outline" href="https://whatsapp.com/channel/0029Vb7SDZ31iUxhzG0W4t1M" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp Channel</a>
-      <a class="btn btn-outline" href="https://www.youtube.com/@Teamsyedhaker" target="_blank"><i class="fab fa-youtube"></i> YouTube Channel</a>
-      <a class="btn btn-outline" href="https://whatsapp.com/channel/0029VbCkaqb5fM5VgpvRJc2Y" target="_blank"><i class="fab fa-whatsapp"></i> WhatsApp Channel</a>
-    </div>
-  </section>
 </main>
-
-<footer>&copy; <span id="year"></span> <span>SYED TECH</span> — All rights reserved.</footer>
 
 <div id="toast">CODE COPIED!</div>
 
