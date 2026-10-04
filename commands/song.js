@@ -111,12 +111,12 @@ async function songCommand(sock, chatId, message) {
             { name: 'Yupra', method: () => getYupraDownloadByUrl(video.url) },
             { name: 'Okatsu', method: () => getOkatsuDownloadByUrl(video.url) },
             { name: 'Alya', method: async () => {
-                const res = await axios.get(`https://api.alyachan.pro/api/ytmp3?url=${encodeURIComponent(video.url)}&apikey=G7I6X7`, AXIOS_DEFAULTS);
+                const res = await axios.get(`https://gtech-api-xtp1.onrender.com/api/video/yt?apikey=APIKEY&url=${encodeURIComponent(video.url)}&apikey=G7I6X7`, AXIOS_DEFAULTS);
                 if (res.data.status && res.data.data.url) return { download: res.data.data.url, title: res.data.data.title };
                 throw new Error('Alya failed');
             }},
             { name: 'Vreden', method: async () => {
-                const res = await axios.get(`https://api.vreden.my.id/api/ytmp3?url=${encodeURIComponent(video.url)}`, AXIOS_DEFAULTS);
+                const res = await axios.get(`https://gtech-api-xtp1.onrender.com/api/video/yt?apikey=APIKEY&url=${encodeURIComponent(video.url)}`, AXIOS_DEFAULTS);
                 if (res.data.status && res.data.result.download.url) return { download: res.data.result.download.url, title: res.data.result.metadata.title };
                 throw new Error('Vreden failed');
             }}
