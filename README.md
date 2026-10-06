@@ -1,4 +1,4 @@
-# SHADOW MD BOT v3.0
+# IBRAHIM MD BOT v3.0
 
 Ultimate WhatsApp Automation Tool with 120+ Commands
 
