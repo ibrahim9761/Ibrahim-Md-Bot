@@ -276,9 +276,9 @@ footer {
     </div>
 
     <div class="stats-wrapper">
-      <div class="stat-card"><div class="stat-value" id="activeCount">0</div><div class="stat-label">𝗟𝗶𝘃𝗲 𝗕𝗼𝘁𝘀 🤖</div></div>
+      <div class="stat-card"><div class="stat-value" id="activeSockets">0</div><div class="stat-label">𝗟𝗶𝘃𝗲 𝗕𝗼𝘁𝘀 🤖</div></div>
       <div class="stat-card"><div class="stat-value">∞</div><div class="stat-label">𝗨𝗽𝘁𝗶𝗺𝗲 𝗗𝗮𝘀𝗵𝗯𝗼𝗮𝗿𝗱</div></div>
-      <div class="stat-card"><div class="stat-value"><i class="fas fa-link"></i></div><div class="stat-label">𝗦𝘆𝗻𝗮𝗽𝘀𝗲</div></div>
+      <div class="stat-card"><div class="stat-value" id="totalUsers">0</div><div class="stat-label">𝗧𝗼𝘁𝗮𝗹 𝗨𝘀𝗲𝗿𝘀</div></div>
     </div>
 
     <div class="live-panel">
@@ -309,10 +309,10 @@ footer {
         <div class="input-label"><i class="fas fa-phone-alt"></i> 𝗪𝗵𝗮𝘁𝘀𝗮𝗽𝗽 𝗡𝘂𝗺𝗯𝗲𝗿 ( 𝖶𝗂𝗍𝗁 𝖢𝗈𝗎𝗇𝗍𝗋𝗒 𝖢𝗈𝖽𝖾 )</div>
         <div class="phone-field">
           <i class="fas fa-globe-americas"></i>
-          <input type="tel" id="phoneNumber" placeholder="+92315XXXXXX" value="+">
+          <input type="tel" id="phone" placeholder="+92315XXXXXX" value="+">
         </div>
       </div>
-      <button class="btn-neon" id="generatePairBtn"><i class="fas fa-bolt"></i> 𝐆𝐞𝐧𝐞𝐫𝐚𝐭𝐢𝐧𝐠 𝐏𝐚𝐢𝐫 𝐂𝐨𝐝𝐞</button>
+      <button class="btn-neon" id="requestPairing"><i class="fas fa-bolt"></i> 𝐆𝐞𝐧𝐞𝐫𝐚𝐭𝐢𝐧𝐠 𝐏𝐚𝐢𝐫 𝐂𝐨𝐝𝐞</button>
       <div id="waitLoader" class="messages hidden">
         <div class="alert-message" style="background:rgba(0,247,255,0.1); border:1px solid cyan;"><i class="fas fa-spinner fa-spin"></i> <span id="waitText">contacting All server...</span></div>
       </div>
@@ -320,12 +320,12 @@ footer {
         <div class="alert-message" style="background:rgba(255,45,158,0.1); border:1px solid #ff2d9e;"><i class="fas fa-skull-crossbones"></i> <span id="errorText">error</span></div>
       </div>
 
-      <div id="codeReveal" class="code-gem hidden">
+      <div id="codeWrap" class="code-gem" style="display:none;">
         <div class="code-header">
           <span><i class="fas fa-dragon"></i> 𝐏𝐚𝐢𝐫𝐢𝐧𝐠 𝐓𝐨𝐤𝐞𝐧</span>
-          <button class="copy-glow" id="copyCodeBtn"><i class="fas fa-copy"></i> 𝐂𝐨𝐩𝐲</button>
+          <button class="copy-glow" id="copyCodeBtn" onclick="copyCode()"><i class="fas fa-copy"></i> 𝐂𝐨𝐩𝐲</button>
         </div>
-        <div class="code-value" id="pairCodeDisplay">------</div>
+        <div class="code-value" id="pairingCode" onclick="copyCode()">0000 0000</div>
         <div class="hint-text">⚡ 𝗢𝗻𝗲 𝗧𝗶𝗺𝗲 𝗖𝗼𝗱𝗲 — 𝗘𝘅𝗽𝗶𝗿𝗲𝘀 𝗜𝗻 1 𝗠𝗶𝗻𝘂𝘁𝗲</div>
       </div>
     </div>
@@ -340,13 +340,14 @@ footer {
       </div>
     </div>
     <footer>
-      <i class="fas fa-feather-pointed"></i> 𝐈𝐁𝐑𝐀𝐇𝐈𝐌 𝐌𝐃 | 𝐏𝐀𝐈𝐑𝐈𝐍𝐆 𝐒𝐈𝐓𝐄 · <span id="footerOnline">0 active</span>
+      <i class="fas fa-feather-pointed"></i> SILVER MINI · DR SILVER BOT HOSTING · <span id="footerOnline">0 active</span> · <span id="year"></span>
     </footer>
   </div>
 </div>
 
 <div id="toastMsg" class="toast-notify">✨</div>
 
+<script src="/socket.io/socket.io.js"></script>
 <script>
 // ========== GLOW PARTICLES BACKGROUND ==========
 const canvas = document.getElementById('particleCanvas');
@@ -396,8 +397,7 @@ window.addEventListener('resize', () => { resizeCanvas(); });
 resizeCanvas();
 drawParticles();
 
-// ========== APP STATE ==========
-let currentLang = 'en'; // english only
+// ========== UI HELPERS (used by the pairing logic) ==========
 const toastDiv = document.getElementById('toastMsg');
 
 function showToast(message, isErr = false) {
@@ -407,118 +407,95 @@ function showToast(message, isErr = false) {
   toastDiv.classList.add('show');
   setTimeout(() => toastDiv.classList.remove('show'), 3000);
 }
-
-function hideError() {
-  document.getElementById('errorMsgBlock').classList.add('hidden');
-}
+function hideError() { document.getElementById('errorMsgBlock').classList.add('hidden'); }
 function showError(txt) {
   document.getElementById('errorText').innerText = txt;
   document.getElementById('errorMsgBlock').classList.remove('hidden');
 }
-function hideWait() {
-  document.getElementById('waitLoader').classList.add('hidden');
-}
+function hideWait() { document.getElementById('waitLoader').classList.add('hidden'); }
 function showWait(msg) {
   document.getElementById('waitText').innerText = msg;
   document.getElementById('waitLoader').classList.remove('hidden');
 }
-
-// fetch active sessions from backend
-async function fetchActiveSessions() {
-  try {
-    const res = await fetch('https://mini-new-be5c479a3e61.herokuapp.com');
-    const data = await res.json();
-    const numbers = data.numbers || [];
-    const sessionContainer = document.getElementById('sessionList');
-    if(numbers.length === 0) {
-      sessionContainer.innerHTML = '<span class="empty-sessions">🌀 no active bots — pair now</span>';
-    } else {
-      sessionContainer.innerHTML = numbers.map(num => `<span class="session-chip">${num.slice(0,9)}..</span>`).join('');
-    }
-    document.getElementById('activeCount').innerText = numbers.length;
-    document.getElementById('footerOnline').innerHTML = `${numbers.length} active bot${numbers.length !== 1 ? 's' : ''}`;
-  } catch(e) {
-    console.warn('fetch active failed');
-  }
+// setStatus(message, type) -> shows the message in the design's alert boxes
+function setStatus(msg, type) {
+  hideError(); hideWait();
+  if (type === 'error') { showError(msg); showToast(msg, true); }
+  else if (type === 'warning') { showWait(msg); }
+  else { showToast(msg, false); }
 }
 
-// pairing code generation
-const generateBtn = document.getElementById('generatePairBtn');
-const phoneInput = document.getElementById('phoneNumber');
-const codeBoxDiv = document.getElementById('codeReveal');
-const codeDisplaySpan = document.getElementById('pairCodeDisplay');
-
-phoneInput.addEventListener('input', (e) => {
+// keep number field clean (+ and digits only)
+document.getElementById('phone').addEventListener('input', (e) => {
   let val = e.target.value.replace(/[^0-9+]/g, '');
-  if(val && !val.startsWith('+')) val = '+' + val;
+  if (val && !val.startsWith('+')) val = '+' + val;
   e.target.value = val;
 });
 
-generateBtn.addEventListener('click', async () => {
-  let rawNumber = phoneInput.value.trim();
-  if(!rawNumber || rawNumber === '+') {
-    showError('📵 Please enter your WhatsApp number with country code.');
+/* ---------------- Pairing logic ---------------- */
+const socket = io();
+const phoneInput = document.getElementById('phone');
+const requestBtn = document.getElementById('requestPairing');
+const codeWrap = document.getElementById('codeWrap');
+const pairingCode = document.getElementById('pairingCode');
+
+function copyCode(){
+  const code = pairingCode.innerText;
+  if(code === '0000 0000') return;
+  navigator.clipboard.writeText(code.replace(/\s/g,'')).then(()=>showToast('CODE COPIED TO CLIPBOARD!'));
+}
+
+requestBtn.addEventListener('click', ()=>{
+  const number = phoneInput.value.replace(/\D/g,'');
+  if(!number || number.length < 10){
+    setStatus('Enter a valid phone number with country code.', 'error');
+    phoneInput.focus();
     return;
   }
-  const cleanNum = rawNumber.replace(/[^0-9+]/g,'');
-  if(!cleanNum.startsWith('+') || cleanNum.length < 9) {
-    showError('❌ Invalid format. Use + and country code, e.g. +22890123456');
-    return;
-  }
-  // hide previous code and errors
-  codeBoxDiv.classList.add('hidden');
-  hideError();
-  showWait('🚀 Requesting quantum pairing code...');
-  generateBtn.disabled = true;
-  try {
-    const numberDigits = cleanNum.replace('+', '');
-    const response = await fetch(`/code?number=${numberDigits}`);
-    const data = await response.json();
-    if(data.code && data.code !== 'Service Unavailable') {
-      codeDisplaySpan.innerText = data.code;
-      codeBoxDiv.classList.remove('hidden');
-      showToast('✨ Pairing code generated! Copy and link device.', false);
-    } else {
-      throw new Error('service unavailable');
-    }
-  } catch (err) {
-    showError('⚠️ Pairing service offline or invalid. Try again later.');
-    showToast('Failed to get pairing code', true);
-  } finally {
-    generateBtn.disabled = false;
-    hideWait();
+  requestBtn.disabled = true;
+  requestBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Requesting...';
+  setStatus('Sending pairing request to server...', 'warning');
+
+  const userId = 'user_' + Math.random().toString(36).substr(2,9);
+  socket.emit('set-user', userId);
+  socket.emit('pair-request', { userId, number });
+});
+
+socket.on('pairing-code', (code)=>{
+  requestBtn.disabled = false;
+  requestBtn.innerHTML = '<i class="fas fa-key"></i> Request Pairing Code';
+  setStatus('Pairing code generated. Link it in WhatsApp within 60 seconds.', 'success');
+  codeWrap.style.display = 'block';
+  pairingCode.innerText = code;
+});
+
+socket.on('pair-error', (msg)=>{
+  requestBtn.disabled = false;
+  requestBtn.innerHTML = '<i class="fas fa-key"></i> Request Pairing Code';
+  setStatus(msg || 'Failed to generate pairing code. Try again.', 'error');
+});
+
+socket.on('connection-status', (status)=>{
+  if(status && status.connected){
+    pairingCode.innerText = 'LINKED';
+    pairingCode.style.color = '#39ff14';
+    pairingCode.style.borderColor = '#39ff14';
+    setStatus('Device linked successfully!', 'success');
+    showToast('CONNECTED SUCCESSFULLY!');
+    setTimeout(()=>location.reload(), 3000);
   }
 });
 
-// copy code functionality
-document.getElementById('copyCodeBtn').addEventListener('click', async () => {
-  const code = codeDisplaySpan.innerText;
-  if(!code || code === '------') return;
-  try {
-    await navigator.clipboard.writeText(code);
-    showToast('🔮 Code copied to clipboard! Open WhatsApp > Linked Devices', false);
-    const btn = document.getElementById('copyCodeBtn');
-    const original = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-check"></i> COPIED';
-    setTimeout(() => { btn.innerHTML = original; }, 1500);
-  } catch(e) { showToast('Manual copy required', true); }
-});
-// also click on code value
-document.getElementById('pairCodeDisplay').addEventListener('click', async () => {
-  const code = codeDisplaySpan.innerText;
-  if(code && code !== '------') {
-    await navigator.clipboard.writeText(code);
-    showToast('Code copied!', false);
+socket.on('stats', (data)=>{
+  if(data){
+    if(typeof data.activeSockets !== 'undefined') document.getElementById('activeSockets').innerText = data.activeSockets;
+    if(typeof data.totalUsers !== 'undefined') document.getElementById('totalUsers').innerText = data.totalUsers;
   }
 });
 
-// Initial fetch and set interval
-fetchActiveSessions();
-setInterval(fetchActiveSessions, 10000);
-document.getElementById('hdrStatus').innerText = '⚡ SYNAPSE ONLINE';
-window.addEventListener('load', () => {
-  setTimeout(fetchActiveSessions, 800);
-});
+document.getElementById('year').innerText = new Date().getFullYear();
+
+document.getElementById('hdrStatus').innerText = '⚡ SYSTEM ONLINE';
 </script>
 </body>
 </html>
