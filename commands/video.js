@@ -1,7 +1,7 @@
 const axios = require('axios');
 const yts = require('yt-search');
 
-const API_BASE = 'https://jawad-tech.vercel.app/download/ytdl?url=';
+const API_BASE = ' https://api.nexoracle.com/downloader/yt-search?apikey=d0dbeb860362981c53&q=';
 
 const AXIOS_DEFAULTS = {
     timeout: 60000,
