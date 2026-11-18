@@ -2,7 +2,7 @@ const axios = require('axios');
 const yts = require('yt-search');
 const { toAudio } = require('../lib/converter');
 
-const API_BASE = 'https://api.ootaizumi.web.id/downloader/youtube';
+const API_BASE = ' https://api.nexoracle.com/downloader/yt-search?apikey=d0dbeb860362981c53&q=';
 
 const AXIOS_DEFAULTS = {
     timeout: 60000,
