@@ -2,7 +2,7 @@ const axios = require('axios');
 const yts = require('yt-search');
 const { toAudio } = require('../lib/converter');
 
-const API_BASE = 'https://freeapi.pro/api/alldl?url=';
+const API_BASE = 'https://api.nexoracle.com/downloader/yt-audio2?apikey=d0dbeb860362981c53&url=';
 
 const AXIOS_DEFAULTS = {
     timeout: 60000,
@@ -94,7 +94,7 @@ async function songCommand(sock, chatId, message) {
             return;
         }
 
-        // Single loading reaction (instead of 3 in a row)
+        // Single loading reaction
         try { await sock.sendMessage(chatId, { react: { text: '⏳', key: message.key } }); } catch (e) {}
 
         let video;
