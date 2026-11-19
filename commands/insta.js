@@ -1,28 +1,36 @@
 const axios = require('axios');
 
-const API_BASE = 'https://api-aswin-sparky.koyeb.app/api/downloader/igdl?url=';
+const API_BASE = 'https://api.nexoracle.com/downloader/insta2?apikey=d0dbeb860362981c53&url=';
 
 // Prevents the same message from being processed twice (spam loop guard)
 const inProgress = new Set();
 
-function extractItems(data) {
-    // Supports { data: [...] }, { result: [...] }, { data: {...} } and plain arrays
-    let list = data?.data ?? data?.result ?? data;
-    if (!list) return [];
-    if (!Array.isArray(list)) {
-        if (Array.isArray(list.media)) list = list.media;
-        else if (Array.isArray(list.url)) list = list.url.map(u => (typeof u === 'string' ? { url: u } : u));
-        else list = [list];
+// Walks any JSON response and collects every http(s) link with its key path
+function collectLinks(obj, path = '', out = []) {
+    if (obj == null) return out;
+    if (typeof obj === 'string') {
+        if (/^https?:\/\//i.test(obj)) out.push({ path: path.toLowerCase(), url: obj });
+    } else if (Array.isArray(obj)) {
+        obj.forEach((v, i) => collectLinks(v, `${path}.${i}`, out));
+    } else if (typeof obj === 'object') {
+        for (const k of Object.keys(obj)) collectLinks(obj[k], `${path}.${k}`, out);
     }
+    return out;
+}
+
+// Works with any response shape (array of urls, array of objects, nested result/data/media)
+function extractItems(data) {
+    const links = collectLinks(data).filter(l =>
+        !/thumb|cover|poster|avatar|icon|profile|preview/.test(l.path) &&
+        !/^https?:\/\/(www\.)?instagram\.com\//i.test(l.url)
+    );
     const seen = new Set();
     const items = [];
-    for (const it of list) {
-        const obj = typeof it === 'string' ? { url: it } : it;
-        const url = obj?.url || obj?.download_url || obj?.download || obj?.link;
-        if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) continue;
-        if (seen.has(url)) continue;
-        seen.add(url);
-        items.push({ url, type: String(obj.type || '').toLowerCase() });
+    for (const l of links) {
+        if (seen.has(l.url)) continue;
+        seen.add(l.url);
+        const isVideo = /video|mp4|reel/.test(l.path) || /\.mp4(\?|$)/i.test(l.url);
+        items.push({ url: l.url, isVideo });
     }
     return items;
 }
@@ -49,8 +57,7 @@ async function instaCommand(sock, from, msg, q) {
         const caption = `*\u{1F4F7} Instagram Downloader*\n\n> © POWERED BY SHADOW MD BOT`;
 
         for (const item of items) {
-            const isVideo = item.type === 'video' || /\.mp4(\?|$)/i.test(item.url);
-            if (isVideo) {
+            if (item.isVideo) {
                 await sock.sendMessage(from, {
                     video: { url: item.url },
                     caption,
