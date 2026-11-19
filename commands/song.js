@@ -2,7 +2,7 @@ const axios = require('axios');
 const yts = require('yt-search');
 const { toAudio } = require('../lib/converter');
 
-const API_BASE = 'https://yt-dl.officialhectormanuel.workers.dev/?url=';
+const API_BASE = 'https://freeapi.pro/api/alldl?url=';
 
 const AXIOS_DEFAULTS = {
     timeout: 60000,
